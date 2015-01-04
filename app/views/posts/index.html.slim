@@ -1,0 +1,9 @@
+h1 Posts#index
+
+- @posts.each do |post|
+  p
+    = link_to post.title, post
+    '
+    ' |
+    '
+    = post.user.email

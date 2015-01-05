@@ -19,6 +19,32 @@ gem 'devise'
 gem 'slim'
 gem 'slim-rails'
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# THE COMMENTS 3.0 FINAL
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# gem 'the_comments', '~> 3.0'
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~ THE COMMENTS 3.0 FINAL
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# THE COMMENTS 3.0 DEVELOPMENT
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gem 'the_comments_base',
+  path: '../the_comments_base'
+
+gem 'the_comments_manager',
+  path: '../the_comments_manager'
+
+gem 'the_comments_subscriptions',
+  path: '../the_comments_subscriptions'
+
+gem 'the_comments_antispam_services',
+  path: '../the_comments_antispam_services'
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~ THE COMMENTS DEVELOPMENT
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
 

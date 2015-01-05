@@ -1,4 +1,30 @@
-## TheComments. Devise based installation
+## TheComments Install
+
+Install migrations
+
+```sh
+rake the_comments_base_engine:install:migrations
+rake the_comments_subscriptions_engine:install:migrations
+rake the_comments_antispam_services_engine:install:migrations
+```
+
+OPEN MIGRATION FILE `xxx_the_comments_change_commentable.the_comments_base_engine.rb` AND FOLLOW AN INSTRUCTIONS!
+
+Install Models/Controllers/Initializer
+
+```sh
+rails g the_comments_base install
+```
+
+Install Models/Controllers
+
+```sh
+rails g the_comments_subscriptions install
+```
+
+===
+## TheComments. Devise based pre-installation
+===
 
 `Gemfile`
 

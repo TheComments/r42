@@ -144,35 +144,6 @@ add following strings into `app/assets/stylesheets/application.css`
 */
 ```
 
-### Change your Layout
-
-Add default `notificator` into `app/views/layouts/application.html.erb`
-
-this partial have to be into your layout
-
-```haml
-  = render partial: 'the_notification/flash', locals: { format: :json }
-```
-
-like this
-
-```erb
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>TheComments Dummy App</title>
-    <%= stylesheet_link_tag    :application, media: :all %>
-    <%= javascript_include_tag :application %>
-    <%= csrf_meta_tags %>
-  </head>
-  <body>
-    <%= render partial: 'the_notification/flash', locals: { format: :json } %>
-    <%= yield %>
-  </body>
-</html>
-
-```
-
 ### Change your Posts controller
 
 Select `@comments` for current Post (`show` method)

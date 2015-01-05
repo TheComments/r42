@@ -1,6 +1,27 @@
 ## TheComments Install
 
-Install migrations
+### Base case
+
+```sh
+rails generate devise user
+
+rails g model post user_id:integer title:string content:text
+```
+
+```ruby
+class User < ActiveRecord::Base
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :trackable, :validatable
+
+  has_many :posts
+end
+
+class Post < ActiveRecord::Base
+  belongs_to :user
+end
+```
+
+### Install migrations
 
 ```sh
 rake the_comments_base_engine:install:migrations
@@ -10,17 +31,225 @@ rake the_comments_antispam_services_engine:install:migrations
 
 OPEN MIGRATION FILE `xxx_the_comments_change_commentable.the_comments_base_engine.rb` AND FOLLOW AN INSTRUCTIONS!
 
-Install Models/Controllers/Initializer
+**only Post model will be commentable in this case**
+
+```ruby
+class TheCommentsChangeCommentable < ActiveRecord::Migration
+  def change
+    # Uncomment this. Add fields to Commentable Models
+
+    [:posts].each do |table_name|
+      change_table table_name do |t|
+        t.integer :draft_comments_count,     default: 0
+        t.integer :published_comments_count, default: 0
+        t.integer :deleted_comments_count,   default: 0
+      end
+    end
+  end
+end
+```
+
+```sh
+rake db:migrate
+```
+
+### Change your commentable Model
+
+Commentable model have to looks like this
+
+```ruby
+class Post < ActiveRecord::Base
+  include ::TheCommentsBase::Commentable
+
+  belongs_to :user
+end
+```
+
+### Install Base Models/Controllers/Initializer
 
 ```sh
 rails g the_comments_base install
 ```
 
-Install Models/Controllers
+### Install Subscriptions Models/Controllers
 
 ```sh
 rails g the_comments_subscriptions install
 ```
+
+### Configurate your commenting platform
+
+`config/initializers/the_comments_base.rb`
+
+```ruby
+TheCommentsBase.configure do |config|
+  config.max_reply_depth     = 5                   # comments tree depth
+  config.tolerance_time      = 5                   # sec - after this delay user can post a comment
+  config.default_state       = :draft              # default state for comment
+  config.default_owner_state = :published          # default state for comment for Moderator
+  config.empty_inputs        = [:commentBody]      # array of spam trap fields
+  config.default_title       = 'Undefined title'   # default commentable_title for denormalization
+
+  config.empty_trap_protection     = true
+  config.tolerance_time_protection = true
+
+  # config.yandex_cleanweb_api_key  = nil
+  # config.akismet_api_key          = nil
+  # config.akismet_blog             = nil
+
+  config.default_mailer_email = 'the-comments@for-ruby-on-rails.domain'
+  config.async_processing     = false
+end
+```
+
+### Change your Application Controller
+
+add `include ::TheCommentsBase::ViewToken` into `app/controllers/application_contoller.rb`
+
+```ruby
+class ApplicationController < ActionController::Base
+  include ::TheCommentsBase::ViewToken
+
+  protect_from_forgery with: :exception
+end
+```
+
+### Add Assets
+
+add following strings into `app/assets/javascripts/application.js.coffee`
+
+```coffee
+#= require jquery
+#= require jquery_ujs
+
+#= require jquery.data-role-block
+
+#= require the_notification/vendors/toastr
+#= require the_notification
+
+#= require the_comments/base
+
+$ ->
+  notificator = TheCommentsDefaultNotificator
+  TheComments.init(notificator)
+  TheCommentsHighlight.init()
+```
+
+add following strings into `app/assets/stylesheets/application.css`
+
+```css
+/*
+  *= require the_notification/vendors/toastr
+  *= require the_comments/base
+*/
+```
+
+### Change your Layout
+
+Add default `notificator` into `app/views/layouts/application.html.erb`
+
+this partial have to be into your layout
+
+```haml
+  = render partial: 'the_notification/flash', locals: { format: :json }
+```
+
+like this
+
+```erb
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>TheComments Dummy App</title>
+    <%= stylesheet_link_tag    :application, media: :all %>
+    <%= javascript_include_tag :application %>
+    <%= csrf_meta_tags %>
+  </head>
+  <body>
+    <%= render partial: 'the_notification/flash', locals: { format: :json } %>
+    <%= yield %>
+  </body>
+</html>
+
+```
+
+### Change your Posts controller
+
+Select `@comments` for current Post (`show` method)
+
+`app/controllers/posts_controller.rb`
+
+```ruby
+class PostsController < ApplicationController
+  def index
+    @posts = Post.includes(:user).all
+  end
+
+  def show
+    @post     = Post.find(params[:id])
+    @comments = @post.comments.with_state([:draft, :published]).nested_set
+  end
+end
+```
+
+### Change your View template
+
+```erb
+<h3><%= @post.title %></h3>
+<p><%= @post.content %></p>
+
+<p>
+  Comments count:
+  <span data-role='comments_sum'>
+    <%= @post.comments_sum %>
+  </span>
+</p>
+
+<%=
+  render partial: comment_template('tree'),
+  locals: { commentable: @post, comments_tree: @comments }
+%>
+```
+
+### Change your `route.rb`
+
+Add routing mixins into your `config/routes.rb`
+
+```ruby
+Rails.application.routes.draw do
+  devise_for :users
+  root to: 'posts#index'
+
+  resources :posts
+  resources :users
+
+  # Add following lines into your routes.en
+
+  TheCommentsBase::Routes.mixin(self)
+  TheCommentsManager::Routes.mixin(self)
+  TheCommentsSubscriptions::Routes.mixin(self)
+end
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ===
 ## TheComments. Devise based pre-installation

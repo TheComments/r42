@@ -1,12 +1,13 @@
 Rails.application.routes.draw do
-  get 'posts/index'
-
-  get 'posts/show'
-
   devise_for :users
-
   root to: 'posts#index'
+
   resources :posts
+  resources :users
+
+  TheCommentsBase::Routes.mixin(self)
+  TheCommentsManager::Routes.mixin(self)
+  TheCommentsSubscriptions::Routes.mixin(self)
 end
 
   # The priority is based upon order of creation: first created -> highest priority.
